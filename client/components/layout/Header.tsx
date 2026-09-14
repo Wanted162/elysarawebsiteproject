@@ -33,7 +33,7 @@ export function Header() {
           </div>
           <NavLink to="/about" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Our story</NavLink>
         </nav>
-        <Link to="/categories/floral-tea" className="hidden rounded-full bg-primary px-5 py-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-transform hover:-translate-y-0.5 sm:block">Discover tea</Link>
+        <Link to="/categories/floral-tea" className="hidden items-center gap-3 border-l border-border pl-5 text-left sm:flex"><span className="h-2 w-2 rounded-full bg-primary" /><span><span className="block text-[0.58rem] font-bold uppercase tracking-[0.16em] text-primary">Now available</span><span className="mt-0.5 block text-xs text-foreground/60">2 floral blends</span></span></Link>
         <button type="button" aria-label="Toggle menu" className="rounded-full p-2 lg:hidden" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
       {open && <nav className="border-t border-border/60 bg-background px-6 py-5 lg:hidden">
@@ -41,7 +41,7 @@ export function Header() {
           <NavLink onClick={() => setOpen(false)} to="/" className="py-1 font-serif text-2xl">Home</NavLink>
           <div className="border-y border-border/70 py-3"><p className="eyebrow mb-2 text-primary">Categories</p>{categoryLinks.map((link) => <NavLink key={link.to} onClick={() => setOpen(false)} to={link.to} className="block py-1 font-serif text-2xl">{link.label}</NavLink>)}</div>
           <NavLink onClick={() => setOpen(false)} to="/about" className="py-1 font-serif text-2xl">Our story</NavLink>
-          <Link onClick={() => setOpen(false)} to="/categories/floral-tea" className="mt-2 w-fit rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground">Discover tea</Link>
+          <Link onClick={() => setOpen(false)} to="/categories/floral-tea" className="mt-2 flex w-fit items-center gap-3 border-t border-border pt-4 text-left"><span className="h-2 w-2 rounded-full bg-primary" /><span><span className="block text-[0.62rem] font-bold uppercase tracking-[0.16em] text-primary">Now available</span><span className="mt-0.5 block text-sm text-foreground/60">2 floral blends</span></span></Link>
         </div>
       </nav>}
     </header>
