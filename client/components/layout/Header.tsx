@@ -1,4 +1,4 @@
-import { ChevronDown, Leaf, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
@@ -22,8 +22,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-6 lg:px-10">
         <Link to="/" className="group flex items-center gap-2" onClick={() => setOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-background transition-transform group-hover:rotate-[-12deg]"><Leaf size={18} /></span>
-          <span className="font-serif text-xl font-semibold tracking-[-0.03em]">Elysara<span className="text-primary">.</span></span>
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2F6bd145047a444341bc8bc140642abd85?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-12 w-10 object-contain transition-transform group-hover:scale-105" />
         </Link>
         <nav className="hidden items-center gap-7 lg:flex">
           <NavLink to="/" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Home</NavLink>
