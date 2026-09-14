@@ -20,11 +20,11 @@ export function Header() {
   const categoryActive = location.pathname.startsWith("/categories/");
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-6 lg:px-10">
-        <Link to="/" className="group flex items-center gap-2" onClick={() => setOpen(false)}>
-          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2F6bd145047a444341bc8bc140642abd85?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-12 w-10 object-contain transition-transform group-hover:scale-105" />
+      <div className="mx-auto flex h-[84px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:h-[96px] lg:px-10">
+        <Link to="/" className="group flex shrink-0 items-center" onClick={() => setOpen(false)}>
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2F6bd145047a444341bc8bc140642abd85?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-16 w-16 object-fill transition-transform group-hover:scale-105 lg:h-20 lg:w-20" />
         </Link>
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-9 lg:flex">
           <NavLink to="/" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Home</NavLink>
           <div className="relative" onMouseEnter={() => setCategoriesOpen(true)} onMouseLeave={() => setCategoriesOpen(false)}>
             <button type="button" onClick={() => setCategoriesOpen(!categoriesOpen)} className={`inline-flex items-center gap-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${categoryActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Categories <ChevronDown size={14} className={`transition-transform ${categoriesOpen ? "rotate-180" : ""}`} /></button>
@@ -32,7 +32,7 @@ export function Header() {
           </div>
           <NavLink to="/about" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Our story</NavLink>
         </nav>
-        <Link to="/products" className="hidden items-center gap-3 border-l border-border pl-5 text-left sm:flex"><span className="h-2 w-2 rounded-full bg-primary" /><span><span className="block text-[0.58rem] font-bold uppercase tracking-[0.16em] text-primary">Now available</span><span className="mt-0.5 block text-xs text-foreground/60">2 floral blends</span></span></Link>
+        <Link to="/products" className="hidden shrink-0 items-center gap-3 border-l border-border pl-6 text-left transition-opacity hover:opacity-70 sm:flex"><span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_4px_hsl(var(--primary)/.12)]" /><span><span className="block text-[0.58rem] font-bold uppercase tracking-[0.18em] text-primary">Now available</span><span className="mt-1 block text-xs text-foreground/60">2 floral blends</span></span></Link>
         <button type="button" aria-label="Toggle menu" className="rounded-full p-2 lg:hidden" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
       {open && <nav className="border-t border-border/60 bg-background px-6 py-5 lg:hidden">
