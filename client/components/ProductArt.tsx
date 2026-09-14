@@ -1,12 +1,12 @@
 const productImages = {
-  blue: "https://images.pexels.com/photos/5605/drink-leaf-leaves-green.jpg",
+  blue: "https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fa0882b20877849b1b43a1a55062cd1cc?format=webp&width=800&height=1200",
   coral: "https://images.pexels.com/photos/16986600/pexels-photo-16986600.jpeg",
 };
 
 export function ProductArt({ tone = "blue", compact = false }: { tone?: "blue" | "coral"; compact?: boolean }) {
   const blue = tone === "blue";
   return <div className={`group relative flex items-center justify-center overflow-hidden ${compact ? "h-44" : "h-64"} ${blue ? "bg-[#dce7e2]" : "bg-[#ead8cd]"}`}>
-    <img src={productImages[tone]} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-20 saturate-[.65] mix-blend-multiply transition duration-700 ease-out group-hover:scale-105 group-hover:opacity-30" />
+    <img src={productImages[tone]} alt="" aria-hidden="true" className={`absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105 ${blue ? "opacity-75 saturate-[.9]" : "opacity-20 saturate-[.65] mix-blend-multiply group-hover:opacity-30"}`} />
     <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/5" />
     <div className={`absolute -right-10 -top-10 h-44 w-44 rounded-full border ${blue ? "border-secondary/20" : "border-primary/20"}`} />
     <div className={`absolute -bottom-16 -left-12 h-48 w-48 rounded-full border ${blue ? "border-secondary/20" : "border-primary/20"}`} />
