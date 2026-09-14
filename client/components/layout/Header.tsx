@@ -20,9 +20,9 @@ export function Header() {
   const categoryActive = location.pathname.startsWith("/categories/");
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-[84px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:h-[96px] lg:px-10">
-        <Link to="/" className="group flex shrink-0 items-center" onClick={() => setOpen(false)}>
-          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fb05dbaf1bd604eb3bad4e9a855e3dbab?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-20 w-24 object-contain transition-transform group-hover:scale-105 lg:h-24 lg:w-28" />
+      <div className="mx-auto flex h-[116px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:h-[136px] lg:px-10">
+        <Link to="/" className="group flex shrink-0 items-center self-center" onClick={() => setOpen(false)}>
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fb05dbaf1bd604eb3bad4e9a855e3dbab?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-28 w-36 object-contain transition-transform group-hover:scale-105 lg:h-32 lg:w-40" />
         </Link>
         <nav className="hidden flex-1 items-center justify-center gap-9 lg:flex">
           <NavLink to="/" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Home</NavLink>
