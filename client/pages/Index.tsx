@@ -1,62 +1,32 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import { ArrowDown, ArrowUpRight, Flower2, Globe2, Heart, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { BotanicalDivider } from "@/components/BotanicalDivider";
+import { CategoryArt } from "@/components/CategoryArt";
+import { ProductArt } from "@/components/ProductArt";
+
+const values = [
+  { icon: Flower2, title: "Purely botanical", copy: "Plants, petals and roots in their most beautiful form." },
+  { icon: Heart, title: "Made with care", copy: "Small-batch blends created for meaningful daily rituals." },
+  { icon: Globe2, title: "Kind to earth", copy: "Thoughtful sourcing that honours the world around us." },
+];
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
+  return <div>
+    <section className="relative overflow-hidden border-b border-border/60 bg-[#e6ece4]">
+      <div className="mx-auto grid min-h-[680px] max-w-7xl items-center gap-10 px-6 py-20 lg:grid-cols-[1.05fr_.95fr] lg:px-10 lg:py-24">
+        <div className="relative z-10 max-w-xl"><p className="eyebrow text-primary">Organics & lifestyle · est. 2024</p><h1 className="mt-6 text-6xl leading-[.98] tracking-[-0.045em] sm:text-8xl">Wellness,<br /><em className="font-normal text-primary">in full bloom.</em></h1><p className="mt-8 max-w-md text-base leading-7 text-foreground/65">Botanical blends and nourishing rituals for the beautifully intentional life. Welcome to a softer way of feeling good.</p><div className="mt-9 flex flex-wrap items-center gap-4"><Link to="/categories/floral-tea" className="inline-flex items-center gap-3 rounded-full bg-primary px-6 py-4 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground transition-transform hover:-translate-y-1">Explore our blends <ArrowUpRight size={16} /></Link><Link to="/#story" className="inline-flex items-center gap-2 px-3 py-3 text-xs font-bold uppercase tracking-[0.13em] text-foreground/65 hover:text-primary">Our philosophy <ArrowDown size={15} /></Link></div></div>
+        <div className="relative mx-auto h-[420px] w-full max-w-[500px] lg:h-[560px]"><div className="absolute left-1/2 top-1/2 h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f3efe3] sm:h-[440px] sm:w-[440px]" /><svg className="absolute inset-0 h-full w-full" viewBox="0 0 500 560" fill="none"><path d="M240 550C245 422 251 292 232 114" stroke="#526e58" strokeWidth="2"/><path d="M243 401C194 367 161 329 132 281M244 335C297 301 329 263 364 203M237 461C188 444 155 417 119 382" stroke="#526e58" strokeWidth="2"/><ellipse cx="132" cy="281" rx="53" ry="17" transform="rotate(38 132 281)" fill="#8da28f"/><ellipse cx="364" cy="203" rx="50" ry="17" transform="rotate(-45 364 203)" fill="#8da28f"/><ellipse cx="119" cy="382" rx="54" ry="17" transform="rotate(28 119 382)" fill="#b2c0a9"/><path d="M230 191C200 161 190 126 201 95C234 105 253 134 230 191Z" fill="#bd755e" fillOpacity=".7"/><path d="M235 193C266 161 274 129 260 97C231 110 217 140 235 193Z" fill="#d3977d" fillOpacity=".75"/></svg><div className="absolute bottom-8 right-0 max-w-[170px] border-l border-secondary/40 pl-4 text-xs italic leading-5 text-foreground/60">A little more ritual.<br />A lot more you.</div></div>
+      </div><div className="absolute bottom-7 left-6 hidden text-[0.63rem] uppercase tracking-[0.25em] text-foreground/45 lg:block [writing-mode:vertical-rl]">Rooted in nature · made for now</div>
+    </section>
 
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
-  };
+    <section id="story" className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32"><div className="grid items-center gap-16 lg:grid-cols-[.8fr_1.2fr]"><div><p className="eyebrow text-primary">The Elysara way</p><h2 className="mt-5 max-w-md text-5xl leading-[1.05] sm:text-6xl">Small moments,<br /><em className="font-normal text-primary">deeply felt.</em></h2></div><div className="max-w-xl"><p className="text-xl leading-8 text-foreground/80">We believe wellness should feel less like a checklist and more like coming home to yourself.</p><p className="mt-5 text-base leading-7 text-muted-foreground">Elysara brings together the quiet wisdom of botanicals with a modern, considered approach to everyday living. Every blend is made to be savoured — with ingredients you can recognise, rituals you can return to, and a little beauty in between.</p><div className="mt-9 flex items-center gap-5"><BotanicalDivider /><span className="shrink-0 text-xs font-semibold uppercase tracking-widest text-secondary">Rooted in nature</span></div></div></div></section>
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
-      </div>
-    </div>
-  );
+    <section className="bg-[#f0ebe1] px-6 py-24 lg:px-10"><div className="mx-auto max-w-7xl"><div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><p className="eyebrow text-primary">Explore the collection</p><h2 className="mt-4 text-5xl sm:text-6xl">Find your <em className="font-normal text-primary">ritual.</em></h2></div><p className="max-w-xs text-sm leading-6 text-muted-foreground">A growing garden of thoughtful ingredients, blended for every kind of day.</p></div><div className="mt-12 grid gap-5 md:grid-cols-3"><Link to="/categories/floral-tea" className="group"><CategoryArt kind="floral" /><div className="flex items-center justify-between border-b border-border py-5"><div><h3 className="text-2xl">Floral tea</h3><p className="mt-1 text-sm text-muted-foreground">Petals with a purpose</p></div><ArrowUpRight className="text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div></Link><Link to="/categories/herbal-tea" className="group"><CategoryArt kind="herbal" /><div className="flex items-center justify-between border-b border-border py-5"><div><h3 className="text-2xl">Herbal tea</h3><p className="mt-1 text-sm text-muted-foreground">The wisdom of leaves</p></div><ArrowUpRight className="text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div></Link><Link to="/categories/superfoods" className="group"><CategoryArt kind="superfood" /><div className="flex items-center justify-between border-b border-border py-5"><div><h3 className="text-2xl">Superfoods</h3><p className="mt-1 text-sm text-muted-foreground">Nourishment, naturally</p></div><ArrowUpRight className="text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div></Link></div></div></section>
+
+    <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32"><div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><p className="eyebrow text-primary">The first harvest</p><h2 className="mt-4 text-5xl sm:text-6xl">Meet the <em className="font-normal text-primary">blends.</em></h2></div><Link to="/categories/floral-tea" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-primary">View floral tea <ArrowUpRight size={16} /></Link></div><div className="mt-12 grid gap-6 sm:grid-cols-2"><Link to="/products/blue-vitality" className="group"><ProductArt tone="blue" /><div className="flex items-start justify-between border-b border-border py-5"><div><p className="eyebrow text-muted-foreground">Floral tea · 01</p><h3 className="mt-2 text-3xl">Blue Vitality</h3><p className="mt-2 text-sm text-muted-foreground">A bright, uplifting cup for new beginnings.</p></div><ArrowUpRight className="mt-1 text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div></Link><Link to="/products/crimson-bloom" className="group"><ProductArt tone="coral" /><div className="flex items-start justify-between border-b border-border py-5"><div><p className="eyebrow text-muted-foreground">Floral tea · 02</p><h3 className="mt-2 text-3xl">Crimson Bloom</h3><p className="mt-2 text-sm text-muted-foreground">A soulful floral infusion with a rosy finish.</p></div><ArrowUpRight className="mt-1 text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div></Link></div></section>
+
+    <section className="bg-secondary px-6 py-20 text-secondary-foreground lg:px-10"><div className="mx-auto max-w-7xl"><div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div><p className="eyebrow text-accent">Why Elysara</p><h2 className="mt-4 max-w-sm text-5xl leading-[1.05]">Good for you.<br /><em className="font-normal text-accent">Good all around.</em></h2></div><div className="grid gap-8 sm:grid-cols-3">{values.map(({ icon: Icon, title, copy }) => <div key={title} className="border-t border-secondary-foreground/20 pt-5"><Icon size={22} className="text-accent" /><h3 className="mt-5 text-xl text-secondary-foreground">{title}</h3><p className="mt-3 text-sm leading-6 text-secondary-foreground/65">{copy}</p></div>)}</div></div></div></section>
+
+    <section className="px-6 py-24 text-center lg:px-10 lg:py-32"><Sparkles className="mx-auto text-primary" size={22} /><p className="eyebrow mt-5 text-primary">A note from the garden</p><h2 className="mx-auto mt-5 max-w-2xl text-5xl leading-[1.05] sm:text-6xl">Make space for the<br /><em className="font-normal text-primary">good stuff.</em></h2><p className="mx-auto mt-6 max-w-md text-sm leading-7 text-muted-foreground">Join our circle for seasonal rituals, thoughtful notes and first sips of what’s coming next.</p><div className="mx-auto mt-8 flex max-w-md border-b border-foreground/30 pb-3 text-left"><input aria-label="Email address" placeholder="Your email address" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" /><button className="text-xs font-bold uppercase tracking-widest text-primary">Join us</button></div></section>
+  </div>;
 }
