@@ -75,4 +75,8 @@
 @layer utilities {
   .eyebrow { @apply text-[0.68rem] font-bold uppercase tracking-[0.26em]; }
   .text-balance { text-wrap: balance; }
+  .photo-paper-leaves, .photo-paper-petals, .photo-paper-warm { background-size: cover; background-position: center; background-attachment: fixed; }
+  .photo-paper-leaves { background-image: linear-gradient(rgba(249, 247, 241, .91), rgba(249, 247, 241, .91)), url("https://images.pexels.com/photos/5605/drink-leaf-leaves-green.jpg"); }
+  .photo-paper-petals { background-image: linear-gradient(rgba(249, 247, 241, .9), rgba(249, 247, 241, .9)), url("https://images.pexels.com/photos/16986600/pexels-photo-16986600.jpeg"); }
+  .photo-paper-warm { background-image: linear-gradient(rgba(249, 247, 241, .87), rgba(249, 247, 241, .87)), url("https://images.pexels.com/photos/15661863/pexels-photo-15661863.jpeg"); }
 }
