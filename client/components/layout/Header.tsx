@@ -20,9 +20,9 @@ export function Header() {
   const categoryActive = location.pathname.startsWith("/categories/");
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-md">
-      <div className="relative mx-auto flex h-[116px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:h-[136px] lg:px-10">
+      <div className="relative mx-auto flex h-[96px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:h-[112px] lg:px-10">
         <Link to="/" className="group absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center" onClick={() => setOpen(false)}>
-          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fb05dbaf1bd604eb3bad4e9a855e3dbab?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-28 w-36 object-contain transition-transform group-hover:scale-105 lg:h-32 lg:w-40" />
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fb05dbaf1bd604eb3bad4e9a855e3dbab?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-24 w-32 object-contain transition-transform group-hover:scale-105 lg:h-28 lg:w-36" />
         </Link>
         <nav className="hidden items-center gap-9 lg:flex">
           <NavLink to="/" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Home</NavLink>
@@ -33,7 +33,7 @@ export function Header() {
           <NavLink to="/about" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Our story</NavLink>
         </nav>
         <Link to="/products" className="hidden shrink-0 items-center gap-3 border-l border-border pl-6 text-left transition-opacity hover:opacity-70 sm:ml-auto sm:flex"><span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_4px_hsl(var(--primary)/.12)]" /><span><span className="block text-[0.58rem] font-bold uppercase tracking-[0.18em] text-primary">Now available</span><span className="mt-1 block text-xs text-foreground/60">2 floral blends</span></span></Link>
-        <button type="button" aria-label="Toggle menu" className="rounded-full p-2 lg:hidden" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
+        <button type="button" aria-label="Toggle menu" className="rounded-full p-1.5 [&_svg]:size-5 lg:hidden" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
       {open && <nav className="border-t border-border/60 bg-background px-6 py-5 lg:hidden">
         <div className="mx-auto flex max-w-7xl flex-col gap-4">
