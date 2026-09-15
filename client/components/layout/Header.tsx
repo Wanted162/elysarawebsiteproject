@@ -1,5 +1,6 @@
-import { ChevronDown, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, Menu, ShoppingBag, UserRound, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getCart } from "@/lib/cart";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 const categoryLinks = [
@@ -16,7 +17,9 @@ const links = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const location = useLocation();
+  useEffect(() => { const refresh = () => setCartCount(getCart().length); refresh(); window.addEventListener("elysara-cart-updated", refresh); return () => window.removeEventListener("elysara-cart-updated", refresh); }, []);
   const categoryActive = location.pathname.startsWith("/categories/");
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-md">
@@ -32,7 +35,7 @@ export function Header() {
           </div>
           <NavLink to="/about" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Our story</NavLink>
         </nav>
-        <Link to="/products" className="hidden shrink-0 items-center gap-3 border-l border-border pl-6 text-left transition-opacity hover:opacity-70 sm:ml-auto sm:flex"><span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_4px_hsl(var(--primary)/.12)]" /><span><span className="block text-[0.58rem] font-bold uppercase tracking-[0.18em] text-primary">Now available</span><span className="mt-1 block text-xs text-foreground/60">2 floral blends</span></span></Link>
+        <div className="hidden items-center gap-5 sm:ml-auto sm:flex"><Link to="/products" className="flex shrink-0 items-center gap-3 border-l border-border pl-6 text-left transition-opacity hover:opacity-70"><span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_4px_hsl(var(--primary)/.12)]" /><span><span className="block text-[0.58rem] font-bold uppercase tracking-[0.18em] text-primary">Now available</span><span className="mt-1 block text-xs text-foreground/60">2 floral blends</span></span></Link><Link to="/cart" className="relative text-foreground/65 transition-colors hover:text-primary" aria-label="Cart"><ShoppingBag size={18} />{cartCount > 0 && <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.55rem] font-bold text-primary-foreground">{cartCount}</span>}</Link><Link to="/login" className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-foreground/65 hover:text-primary">Login</Link><Link to="/signup" className="rounded-full border border-primary px-3 py-2 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-primary hover:bg-primary hover:text-primary-foreground">Sign up</Link></div>
         <button type="button" aria-label="Toggle menu" className="rounded-full p-1.5 [&_svg]:size-5 lg:hidden" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
       {open && <nav className="border-t border-border/60 bg-background px-6 py-5 lg:hidden">
@@ -40,7 +43,7 @@ export function Header() {
           <NavLink onClick={() => setOpen(false)} to="/" className="py-1 font-serif text-2xl">Home</NavLink>
           <div className="border-y border-border/70 py-3"><p className="eyebrow mb-2 text-primary">Categories</p>{categoryLinks.map((link) => <NavLink key={link.to} onClick={() => setOpen(false)} to={link.to} className="block py-1 font-serif text-2xl">{link.label}</NavLink>)}</div>
           <NavLink onClick={() => setOpen(false)} to="/about" className="py-1 font-serif text-2xl">Our story</NavLink>
-          <Link onClick={() => setOpen(false)} to="/products" className="mt-2 flex w-fit items-center gap-3 border-t border-border pt-4 text-left"><span className="h-2 w-2 rounded-full bg-primary" /><span><span className="block text-[0.62rem] font-bold uppercase tracking-[0.16em] text-primary">Now available</span><span className="mt-0.5 block text-sm text-foreground/60">2 floral blends</span></span></Link>
+          <Link onClick={() => setOpen(false)} to="/products" className="mt-2 flex w-fit items-center gap-3 border-t border-border pt-4 text-left"><span className="h-2 w-2 rounded-full bg-primary" /><span><span className="block text-[0.62rem] font-bold uppercase tracking-[0.16em] text-primary">Now available</span><span className="mt-0.5 block text-sm text-foreground/60">2 floral blends</span></span></Link><Link onClick={() => setOpen(false)} to="/cart" className="flex items-center gap-3 py-1 font-serif text-2xl"><ShoppingBag size={20} className="text-primary" />Cart {cartCount > 0 && <span className="font-sans text-sm text-primary">({cartCount})</span>}</Link><div className="flex items-center gap-5 border-t border-border pt-4"><Link onClick={() => setOpen(false)} to="/login" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground/70"><UserRound size={16} /> Login</Link><Link onClick={() => setOpen(false)} to="/signup" className="rounded-full border border-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-primary">Sign up</Link></div>
         </div>
       </nav>}
     </header>
