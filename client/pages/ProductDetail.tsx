@@ -21,7 +21,7 @@ export function ProductDetail({ tone, name, number, intro, ingredients, benefits
   const blue = tone === "blue";
   const [selectedWeight, setSelectedWeight] = useState<"25g" | "50g">("25g");
   const [quantity, setQuantity] = useState(1);
-  const prices = { "25g": 289, "50g": 549 } as const;
+  const prices = { "25g": 289, "50g": 499 } as const;
   const selectedPrice = prices[selectedWeight];
   const item: CartItem = { id: `${name}-${selectedWeight}`, productName: name, weight: selectedWeight, price: selectedPrice, tone, quantity };
   const buyNow = () => window.open(createWhatsAppUrl([item]), "_blank", "noopener,noreferrer");
