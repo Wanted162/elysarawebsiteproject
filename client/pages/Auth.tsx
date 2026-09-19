@@ -1,9 +1,25 @@
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Leaf, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 type AuthProps = { mode: "login" | "signup" };
+type Account = { email: string; password: string; name: string };
+
+const ACCOUNTS_KEY = "elysara-accounts";
+const CURRENT_USER_KEY = "elysara-current-user";
+
+function getAccounts(): Account[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) ?? "[]");
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAccounts(accounts: Account[]) {
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+}
 
 export default function Auth({ mode }: AuthProps) {
   const signup = mode === "signup";
@@ -13,48 +29,47 @@ export default function Auth({ mode }: AuthProps) {
   const [name, setName] = useState("");
   const [welcomeName, setWelcomeName] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!supabase) return;
-    void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setWelcomeName(data.user.user_metadata?.full_name || "");
-    });
+    const currentEmail = localStorage.getItem(CURRENT_USER_KEY);
+    const account = getAccounts().find((item) => item.email === currentEmail);
+    if (account) setWelcomeName(account.name);
   }, []);
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
     setError("");
-    setNotice("");
     if (!trimmedEmail) return setError("Enter your email address.");
     if (password.length < 6) return setError("Use a password with at least 6 characters.");
     if (signup && !trimmedName) return setError("Tell us your name to create your account.");
-    if (!supabase || !isSupabaseConfigured) return setError("Authentication is not connected yet. Add the Supabase environment variables and try again.");
 
     setBusy(true);
-    const result = signup
-      ? await supabase.auth.signUp({ email: trimmedEmail, password, options: { data: { full_name: trimmedName } } })
-      : await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
-    setBusy(false);
-    if (result.error) {
-      const message = result.error.message.toLowerCase();
-      if (message.includes("already registered") || message.includes("user already exists")) {
+    const accounts = getAccounts();
+    const existing = accounts.find((item) => item.email === trimmedEmail);
+    if (signup) {
+      if (existing) {
         setError("An account already exists with this email. Please log in instead.");
-      } else if (message.includes("invalid login credentials")) {
-        setError("That email or password is incorrect.");
-      } else {
-        setError(result.error.message);
+        setBusy(false);
+        return;
       }
-      return;
+      const account = { email: trimmedEmail, password, name: trimmedName };
+      saveAccounts([...accounts, account]);
+      localStorage.setItem(CURRENT_USER_KEY, account.email);
+      setWelcomeName(account.name);
+    } else {
+      if (!existing || existing.password !== password) {
+        setError("That email or password is incorrect.");
+        setBusy(false);
+        return;
+      }
+      localStorage.setItem(CURRENT_USER_KEY, existing.email);
+      setWelcomeName(existing.name);
     }
-    if (signup && !result.data.session) {
-      setNotice("Your account was created. Email confirmation is enabled in Supabase, so disable it there to keep signup completely email-free.");
-      return;
-    }
-    setWelcomeName(result.data.user?.user_metadata?.full_name || trimmedName);
+    localStorage.setItem("elysara-member", "true");
+    setBusy(false);
   };
 
   return (
@@ -71,7 +86,6 @@ export default function Auth({ mode }: AuthProps) {
           ) : (
             <form onSubmit={submit} className="mt-8 space-y-4">
               {error && <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
-              {notice && <p className="rounded-xl bg-secondary/10 px-4 py-3 text-sm leading-6 text-secondary-foreground">{notice}</p>}
               {signup && <label className="block text-sm font-medium">Your name<input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>}
               <label className="block text-sm font-medium">Email address<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>
               <label className="block text-sm font-medium">Password<input value={password} onChange={(event) => setPassword(event.target.value)} type="password" minLength={6} placeholder="At least 6 characters" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>
