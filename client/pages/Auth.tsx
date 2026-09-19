@@ -6,6 +6,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 type AuthProps = { mode: "login" | "signup" };
 
 const PENDING_NAME_KEY = "elysara-pending-name";
+const PUBLIC_SITE_URL = "https://elysaraorganicsandlifestyle.netlify.app";
 
 export default function Auth({ mode }: AuthProps) {
   const signup = mode === "signup";
@@ -25,10 +26,7 @@ export default function Auth({ mode }: AuthProps) {
       const pendingName = localStorage.getItem(PENDING_NAME_KEY)?.trim();
       if (pendingName) {
         const update = await supabase.auth.updateUser({ data: { full_name: pendingName } });
-        if (!update.error) {
-          await supabase.from("profiles").upsert({ id: data.user.id, full_name: pendingName, phone: data.user.phone ?? null });
-          localStorage.removeItem(PENDING_NAME_KEY);
-        }
+        if (!update.error) localStorage.removeItem(PENDING_NAME_KEY);
       }
       setWelcomeName(pendingName || data.user.user_metadata?.full_name || "");
     });
@@ -59,7 +57,7 @@ export default function Auth({ mode }: AuthProps) {
       email: trimmedEmail,
       options: {
         shouldCreateUser: signup,
-        emailRedirectTo: `${window.location.origin}${signup ? "/signup" : "/login"}`,
+        emailRedirectTo: `${PUBLIC_SITE_URL}${signup ? "/signup" : "/login"}`,
       },
     });
     setBusy(false);
@@ -79,10 +77,10 @@ export default function Auth({ mode }: AuthProps) {
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-background"><Leaf size={18} /></span>
           <p className="eyebrow mt-8 text-primary">Elysara circle</p>
           <h1 className="mt-3 text-4xl">{signup ? "Create your account." : "Welcome back."}</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{signup ? "Enter your details and we’ll send a secure link to your email." : "Enter your email and we’ll send a secure link to sign in."}</p>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{signup ? "Enter your name and email to get started." : "Enter your email to sign in securely."}</p>
           {sent ? (
             <div className="mt-8 rounded-2xl bg-secondary/10 p-5">
-              <p className="font-serif text-2xl">Check your email.</p>
+              <p className="font-serif text-2xl">Link sent.</p>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{notice}</p>
               <button type="button" onClick={() => { setSent(false); setNotice(""); }} className="mt-6 text-xs font-bold uppercase tracking-[0.13em] text-primary">Use a different email</button>
             </div>
