@@ -19,6 +19,26 @@ function readLocalAccount(): LocalAccount | null {
   }
 }
 
+function explainAuthError(message: string, method?: Method, provider?: "google" | "apple") {
+  const text = message.toLowerCase();
+  if (text.includes("unsupported provider") || text.includes("provider is not enabled")) {
+    return `${provider === "apple" ? "Apple" : "Google"} login is not enabled in Supabase yet. Enable it under Authentication → Providers, then add that provider’s OAuth credentials.`;
+  }
+  if (text.includes("sms provider") || text.includes("phone provider")) {
+    return "Phone OTP needs an SMS provider enabled in Supabase Authentication → Providers. Email OTP does not require SMS.";
+  }
+  if (text.includes("email provider") || text.includes("smtp") || text.includes("mail")) {
+    return "Supabase could not send the email. Check Authentication → Email settings and confirm the email provider is enabled.";
+  }
+  if (text.includes("rate limit") || text.includes("too many")) {
+    return "Supabase temporarily limited OTP requests. Wait a moment and try again.";
+  }
+  if (text.includes("invalid") && method === "phone") {
+    return "Enter the phone number with its country code, for example +91 98765 43210.";
+  }
+  return message;
+}
+
 export default function Auth({ mode }: AuthProps) {
   const signup = mode === "signup";
   const navigate = useNavigate();
@@ -72,7 +92,7 @@ export default function Auth({ mode }: AuthProps) {
       : await supabase.auth.signInWithOtp({ phone: value, options: { shouldCreateUser: signup } });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message);
+      setError(explainAuthError(result.error.message, method));
       return;
     }
     setNotice(`A verification code was sent to ${value}.`);
@@ -110,7 +130,7 @@ export default function Auth({ mode }: AuthProps) {
       : await supabase.auth.verifyOtp({ phone: identity.trim(), token: otp.trim(), type: "sms" });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message);
+      setError(explainAuthError(result.error.message, method));
       return;
     }
     if (signup) setStep("profile");
@@ -167,7 +187,7 @@ export default function Auth({ mode }: AuthProps) {
       provider,
       options: { redirectTo: window.location.origin + (signup ? "/signup" : "/login") },
     });
-    if (providerError) setError(providerError.message);
+    if (providerError) setError(explainAuthError(providerError.message, undefined, provider));
   };
 
   const reset = () => {
