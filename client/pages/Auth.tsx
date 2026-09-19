@@ -5,15 +5,12 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 type AuthProps = { mode: "login" | "signup" };
 
-const PENDING_NAME_KEY = "elysara-pending-name";
-const PUBLIC_SITE_URL = "https://elysaraorganicsandlifestyle.netlify.app";
-
 export default function Auth({ mode }: AuthProps) {
   const signup = mode === "signup";
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [sent, setSent] = useState(false);
   const [welcomeName, setWelcomeName] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -21,52 +18,43 @@ export default function Auth({ mode }: AuthProps) {
 
   useEffect(() => {
     if (!supabase) return;
-    void supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const pendingName = localStorage.getItem(PENDING_NAME_KEY)?.trim();
-      if (pendingName) {
-        const update = await supabase.auth.updateUser({ data: { full_name: pendingName } });
-        if (!update.error) localStorage.removeItem(PENDING_NAME_KEY);
-      }
-      setWelcomeName(pendingName || data.user.user_metadata?.full_name || "");
+    void supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setWelcomeName(data.user.user_metadata?.full_name || "");
     });
   }, []);
 
-  const sendMagicLink = async (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
     setError("");
     setNotice("");
-    if (!trimmedEmail) {
-      setError("Enter your email address.");
-      return;
-    }
-    if (signup && !trimmedName) {
-      setError("Tell us your name to create your account.");
-      return;
-    }
-    if (!supabase || !isSupabaseConfigured) {
-      setError("Email sign-in is not connected yet. Add the Supabase environment variables and try again.");
-      return;
-    }
+    if (!trimmedEmail) return setError("Enter your email address.");
+    if (password.length < 6) return setError("Use a password with at least 6 characters.");
+    if (signup && !trimmedName) return setError("Tell us your name to create your account.");
+    if (!supabase || !isSupabaseConfigured) return setError("Authentication is not connected yet. Add the Supabase environment variables and try again.");
 
     setBusy(true);
-    if (signup) localStorage.setItem(PENDING_NAME_KEY, trimmedName);
-    const result = await supabase.auth.signInWithOtp({
-      email: trimmedEmail,
-      options: {
-        shouldCreateUser: signup,
-        emailRedirectTo: `${PUBLIC_SITE_URL}${signup ? "/signup" : "/login"}`,
-      },
-    });
+    const result = signup
+      ? await supabase.auth.signUp({ email: trimmedEmail, password, options: { data: { full_name: trimmedName } } })
+      : await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message);
+      const message = result.error.message.toLowerCase();
+      if (message.includes("already registered") || message.includes("user already exists")) {
+        setError("An account already exists with this email. Please log in instead.");
+      } else if (message.includes("invalid login credentials")) {
+        setError("That email or password is incorrect.");
+      } else {
+        setError(result.error.message);
+      }
       return;
     }
-    setNotice(`We sent a secure sign-in link to ${trimmedEmail}. Open it to continue.`);
-    setSent(true);
+    if (signup && !result.data.session) {
+      setNotice("Your account was created. Email confirmation is enabled in Supabase, so disable it there to keep signup completely email-free.");
+      return;
+    }
+    setWelcomeName(result.data.user?.user_metadata?.full_name || trimmedName);
   };
 
   return (
@@ -77,23 +65,20 @@ export default function Auth({ mode }: AuthProps) {
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-background"><Leaf size={18} /></span>
           <p className="eyebrow mt-8 text-primary">Elysara circle</p>
           <h1 className="mt-3 text-4xl">{signup ? "Create your account." : "Welcome back."}</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{signup ? "Enter your name and email to get started." : "Enter your email to sign in securely."}</p>
-          {sent ? (
-            <div className="mt-8 rounded-2xl bg-secondary/10 p-5">
-              <p className="font-serif text-2xl">Link sent.</p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{notice}</p>
-              <button type="button" onClick={() => { setSent(false); setNotice(""); }} className="mt-6 text-xs font-bold uppercase tracking-[0.13em] text-primary">Use a different email</button>
-            </div>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{signup ? "Create a simple Elysara account with your name, email, and password." : "Log in with your Elysara email and password."}</p>
+          {welcomeName ? (
+            <div className="mt-8"><p className="font-serif text-2xl">Welcome, {welcomeName}.</p><p className="mt-3 text-sm leading-7 text-muted-foreground">Your Elysara space is ready whenever you are.</p><button type="button" onClick={() => navigate("/")} className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-primary">Continue home <ArrowUpRight size={15} /></button></div>
           ) : (
-            <form onSubmit={sendMagicLink} className="mt-8 space-y-4">
+            <form onSubmit={submit} className="mt-8 space-y-4">
               {error && <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
+              {notice && <p className="rounded-xl bg-secondary/10 px-4 py-3 text-sm leading-6 text-secondary-foreground">{notice}</p>}
               {signup && <label className="block text-sm font-medium">Your name<input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>}
               <label className="block text-sm font-medium">Email address<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>
-              <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground disabled:opacity-60">{busy && <Loader2 size={15} className="animate-spin" />} Email me a sign-in link</button>
+              <label className="block text-sm font-medium">Password<input value={password} onChange={(event) => setPassword(event.target.value)} type="password" minLength={6} placeholder="At least 6 characters" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>
+              <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground disabled:opacity-60">{busy && <Loader2 size={15} className="animate-spin" />} {signup ? "Create account" : "Log in"}</button>
             </form>
           )}
-          {welcomeName && <div className="mt-8"><p className="font-serif text-2xl">Welcome, {welcomeName}.</p><p className="mt-3 text-sm leading-7 text-muted-foreground">Your Elysara space is ready whenever you are.</p><button type="button" onClick={() => navigate("/")} className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-primary">Continue home <ArrowUpRight size={15} /></button></div>}
-          {!sent && !welcomeName && <p className="mt-7 text-center text-sm text-muted-foreground">{signup ? "Already a member?" : "New to Elysara?"} <Link className="font-semibold text-primary" to={signup ? "/login" : "/signup"}>{signup ? "Log in" : "Create an account"}</Link></p>}
+          {!welcomeName && <p className="mt-7 text-center text-sm text-muted-foreground">{signup ? "Already a member?" : "New to Elysara?"} <Link className="font-semibold text-primary" to={signup ? "/login" : "/signup"}>{signup ? "Log in" : "Create an account"}</Link></p>}
         </div>
       </div>
     </section>
