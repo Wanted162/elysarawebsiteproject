@@ -1,200 +1,74 @@
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowLeft, ArrowUpRight, Globe2, Leaf, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Leaf, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 type AuthProps = { mode: "login" | "signup" };
-type Step = "identity" | "otp" | "profile" | "done";
-type Method = "email" | "phone";
-type LocalAccount = { identity: string; name: string };
 
-const DEMO_OTP = "123456";
-const ACCOUNT_KEY = "elysara-account";
-
-function readLocalAccount(): LocalAccount | null {
-  try {
-    return JSON.parse(localStorage.getItem(ACCOUNT_KEY) ?? "null") as LocalAccount | null;
-  } catch {
-    return null;
-  }
-}
-
-function explainAuthError(message: string, method?: Method, provider?: "google" | "apple") {
-  const text = message.toLowerCase();
-  if (text.includes("unsupported provider") || text.includes("provider is not enabled")) {
-    return `${provider === "apple" ? "Apple" : "Google"} login is not enabled in Supabase yet. Enable it under Authentication → Providers, then add that provider’s OAuth credentials.`;
-  }
-  if (text.includes("sms provider") || text.includes("phone provider")) {
-    return "Phone OTP needs an SMS provider enabled in Supabase Authentication → Providers. Email OTP does not require SMS.";
-  }
-  if (text.includes("email provider") || text.includes("smtp") || text.includes("mail")) {
-    return "Supabase could not send the email. Check Authentication → Email settings and confirm the email provider is enabled.";
-  }
-  if (text.includes("rate limit") || text.includes("too many")) {
-    return "Supabase temporarily limited OTP requests. Wait a moment and try again.";
-  }
-  if (text.includes("invalid") && method === "phone") {
-    return "Enter the phone number with its country code, for example +91 98765 43210.";
-  }
-  return message;
-}
+const PENDING_NAME_KEY = "elysara-pending-name";
 
 export default function Auth({ mode }: AuthProps) {
   const signup = mode === "signup";
   const navigate = useNavigate();
-  const [identity, setIdentity] = useState("");
+  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [otp, setOtp] = useState("");
-  const [method, setMethod] = useState<Method>("email");
-  const [step, setStep] = useState<Step>("identity");
+  const [sent, setSent] = useState(false);
+  const [welcomeName, setWelcomeName] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  const [welcomeName, setWelcomeName] = useState("");
 
   useEffect(() => {
     if (!supabase) return;
-    void supabase.auth.getUser().then(({ data }) => {
-      const user = data.user;
-      const profileName = user?.user_metadata?.full_name;
-      if (user && profileName) {
-        setWelcomeName(profileName);
-        setStep("done");
+    void supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const pendingName = localStorage.getItem(PENDING_NAME_KEY)?.trim();
+      if (pendingName) {
+        const update = await supabase.auth.updateUser({ data: { full_name: pendingName } });
+        if (!update.error) {
+          await supabase.from("profiles").upsert({ id: data.user.id, full_name: pendingName, phone: data.user.phone ?? null });
+          localStorage.removeItem(PENDING_NAME_KEY);
+        }
       }
+      setWelcomeName(pendingName || data.user.user_metadata?.full_name || "");
     });
   }, []);
 
-  const requestOtp = async (event: FormEvent<HTMLFormElement>) => {
+  const sendMagicLink = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const value = identity.trim();
-    if (!value) {
-      setError(`Enter your ${method === "email" ? "email address" : "phone number"}.`);
-      return;
-    }
-    setBusy(true);
-    setError("");
-    setNotice("");
-
-    if (!supabase) {
-      const existing = readLocalAccount();
-      if (!signup && existing?.identity !== value.toLowerCase()) {
-        setError("We couldn’t find an account with that contact. Please sign up first.");
-      } else {
-        setNotice(`Demo mode: use ${DEMO_OTP} as the verification code.`);
-        setStep("otp");
-      }
-      setBusy(false);
-      return;
-    }
-
-    const result = method === "email"
-      ? await supabase.auth.signInWithOtp({ email: value, options: { shouldCreateUser: signup } })
-      : await supabase.auth.signInWithOtp({ phone: value, options: { shouldCreateUser: signup } });
-    setBusy(false);
-    if (result.error) {
-      setError(explainAuthError(result.error.message, method));
-      return;
-    }
-    setNotice(`A verification code was sent to ${value}.`);
-    setStep("otp");
-  };
-
-  const verifyOtp = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!/^\d{6}$/.test(otp.trim())) {
-      setError("Enter the six-digit verification code.");
-      return;
-    }
-    setBusy(true);
-    setError("");
-
-    if (!supabase) {
-      if (otp.trim() !== DEMO_OTP) {
-        setBusy(false);
-        setError(`That code is not correct. Use ${DEMO_OTP} in preview mode.`);
-        return;
-      }
-      setBusy(false);
-      if (signup) setStep("profile");
-      else {
-        const account = readLocalAccount();
-        setWelcomeName(account?.name ?? "");
-        localStorage.setItem("elysara-member", "true");
-        setStep("done");
-      }
-      return;
-    }
-
-    const result = method === "email"
-      ? await supabase.auth.verifyOtp({ email: identity.trim(), token: otp.trim(), type: "email" })
-      : await supabase.auth.verifyOtp({ phone: identity.trim(), token: otp.trim(), type: "sms" });
-    setBusy(false);
-    if (result.error) {
-      setError(explainAuthError(result.error.message, method));
-      return;
-    }
-    if (signup) setStep("profile");
-    else {
-      setWelcomeName(result.data.user?.user_metadata?.full_name ?? "");
-      setStep("done");
-    }
-  };
-
-  const createProfile = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
-    if (!trimmedName) {
-      setError("Tell us your name to finish creating your account.");
-      return;
-    }
-    setBusy(true);
-    setError("");
-
-    if (!supabase) {
-      localStorage.setItem(ACCOUNT_KEY, JSON.stringify({ identity: identity.trim().toLowerCase(), name: trimmedName }));
-      localStorage.setItem("elysara-member", "true");
-      setWelcomeName(trimmedName);
-      setBusy(false);
-      setStep("done");
-      return;
-    }
-
-    const user = (await supabase.auth.getUser()).data.user;
-    if (!user) {
-      setBusy(false);
-      setError("Your session expired. Please request a new code.");
-      setStep("identity");
-      return;
-    }
-    const update = await supabase.auth.updateUser({ data: { full_name: trimmedName } });
-    const profile = await supabase.from("profiles").upsert({ id: user.id, full_name: trimmedName, phone: user.phone ?? null });
-    setBusy(false);
-    if (update.error || profile.error) {
-      setError(update.error?.message ?? profile.error?.message ?? "We couldn’t save your profile.");
-      return;
-    }
-    setWelcomeName(trimmedName);
-    setStep("done");
-  };
-
-  const providerLogin = async (provider: "google" | "apple") => {
-    setError("");
-    if (!supabase) {
-      setError(`${provider === "google" ? "Google" : "Apple"} login needs the free Supabase connection configured.`);
-      return;
-    }
-    const { error: providerError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin + (signup ? "/signup" : "/login") },
-    });
-    if (providerError) setError(explainAuthError(providerError.message, undefined, provider));
-  };
-
-  const reset = () => {
-    setStep("identity");
-    setOtp("");
     setError("");
     setNotice("");
+    if (!trimmedEmail) {
+      setError("Enter your email address.");
+      return;
+    }
+    if (signup && !trimmedName) {
+      setError("Tell us your name to create your account.");
+      return;
+    }
+    if (!supabase || !isSupabaseConfigured) {
+      setError("Email sign-in is not connected yet. Add the Supabase environment variables and try again.");
+      return;
+    }
+
+    setBusy(true);
+    if (signup) localStorage.setItem(PENDING_NAME_KEY, trimmedName);
+    const result = await supabase.auth.signInWithOtp({
+      email: trimmedEmail,
+      options: {
+        shouldCreateUser: signup,
+        emailRedirectTo: `${window.location.origin}${signup ? "/signup" : "/login"}`,
+      },
+    });
+    setBusy(false);
+    if (result.error) {
+      setError(result.error.message);
+      return;
+    }
+    setNotice(`We sent a secure sign-in link to ${trimmedEmail}. Open it to continue.`);
+    setSent(true);
   };
 
   return (
@@ -205,33 +79,23 @@ export default function Auth({ mode }: AuthProps) {
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-background"><Leaf size={18} /></span>
           <p className="eyebrow mt-8 text-primary">Elysara circle</p>
           <h1 className="mt-3 text-4xl">{signup ? "Create your account." : "Welcome back."}</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{signup ? "Verify your contact, then we’ll save your name for a personal welcome next time." : "Verify your contact to return to your saved Elysara space."}</p>
-          {!isSupabaseConfigured && <p className="mt-5 rounded-xl bg-secondary/10 px-4 py-3 text-xs leading-5 text-secondary-foreground">Preview mode is active. Connect the free Supabase keys to enable real email, SMS, Google, and Apple authentication.</p>}
-          {error && <p className="mt-5 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
-          {step === "done" ? (
-            <div className="mt-8">
-              <p className="font-serif text-2xl">Welcome{welcomeName ? `, ${welcomeName}` : " back"}.</p>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">Your Elysara space is ready whenever you are.</p>
-              <button type="button" onClick={() => navigate("/")} className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-primary">Continue home <ArrowUpRight size={15} /></button>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{signup ? "Enter your details and we’ll send a secure link to your email." : "Enter your email and we’ll send a secure link to sign in."}</p>
+          {sent ? (
+            <div className="mt-8 rounded-2xl bg-secondary/10 p-5">
+              <p className="font-serif text-2xl">Check your email.</p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{notice}</p>
+              <button type="button" onClick={() => { setSent(false); setNotice(""); }} className="mt-6 text-xs font-bold uppercase tracking-[0.13em] text-primary">Use a different email</button>
             </div>
           ) : (
-            <>
-              {step === "identity" && <>
-                <div className="mt-8 grid grid-cols-2 gap-2 rounded-full bg-muted p-1">
-                  {(["email", "phone"] as Method[]).map((item) => <button key={item} type="button" onClick={() => { setMethod(item); setError(""); }} className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${method === item ? "bg-background text-primary shadow-sm" : "text-muted-foreground"}`}>{item}</button>)}
-                </div>
-                <form onSubmit={requestOtp} className="mt-6 space-y-4">
-                  <label className="block text-sm font-medium">{method === "email" ? "Email address" : "Phone number"}<input value={identity} onChange={(event) => setIdentity(event.target.value)} type={method === "email" ? "email" : "tel"} placeholder={method === "email" ? "you@example.com" : "+91 98765 43210"} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>
-                  <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground disabled:opacity-60">{busy && <Loader2 size={15} className="animate-spin" />} Send OTP</button>
-                </form>
-                <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" /> or continue with <span className="h-px flex-1 bg-border" /></div>
-                <div className="grid grid-cols-2 gap-3"><button type="button" onClick={() => void providerLogin("google")} className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-3 text-xs font-bold"><Globe2 size={15} /> Google</button><button type="button" onClick={() => void providerLogin("apple")} className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-3 text-xs font-bold"><span className="font-serif text-base">A</span> Apple</button></div>
-                <p className="mt-7 text-center text-sm text-muted-foreground">{signup ? "Already a member?" : "New to Elysara?"} <Link className="font-semibold text-primary" to={signup ? "/login" : "/signup"}>{signup ? "Log in" : "Create an account"}</Link></p>
-              </>}
-              {step === "otp" && <form onSubmit={verifyOtp} className="mt-8 space-y-4"><p className="text-sm leading-6 text-muted-foreground">{notice}</p><label className="block text-sm font-medium">Six-digit OTP<input autoFocus value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} placeholder="000000" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg tracking-[0.35em] outline-none ring-primary/20 focus:ring-4" /></label><button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground disabled:opacity-60">{busy && <Loader2 size={15} className="animate-spin" />} Verify OTP</button><button type="button" onClick={reset} className="w-full text-xs font-bold uppercase tracking-[0.13em] text-primary">Use a different contact</button></form>}
-              {step === "profile" && <form onSubmit={createProfile} className="mt-8 space-y-4"><p className="text-sm leading-6 text-muted-foreground">Your contact is verified. What should we call you?</p><label className="block text-sm font-medium">Your name<input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label><button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground disabled:opacity-60">{busy && <Loader2 size={15} className="animate-spin" />} Save my profile</button></form>}
-            </>
+            <form onSubmit={sendMagicLink} className="mt-8 space-y-4">
+              {error && <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
+              {signup && <label className="block text-sm font-medium">Your name<input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>}
+              <label className="block text-sm font-medium">Email address<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 outline-none ring-primary/20 focus:ring-4" /></label>
+              <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-primary-foreground disabled:opacity-60">{busy && <Loader2 size={15} className="animate-spin" />} Email me a sign-in link</button>
+            </form>
           )}
+          {welcomeName && <div className="mt-8"><p className="font-serif text-2xl">Welcome, {welcomeName}.</p><p className="mt-3 text-sm leading-7 text-muted-foreground">Your Elysara space is ready whenever you are.</p><button type="button" onClick={() => navigate("/")} className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-primary">Continue home <ArrowUpRight size={15} /></button></div>}
+          {!sent && !welcomeName && <p className="mt-7 text-center text-sm text-muted-foreground">{signup ? "Already a member?" : "New to Elysara?"} <Link className="font-semibold text-primary" to={signup ? "/login" : "/signup"}>{signup ? "Log in" : "Create an account"}</Link></p>}
         </div>
       </div>
     </section>
