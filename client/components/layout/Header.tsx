@@ -28,9 +28,9 @@ export function Header() {
   const categoryActive = location.pathname.startsWith("/categories/");
   return (
     <header className="glass-header sticky top-0 z-50 border-b backdrop-blur-md">
-      <div className="relative mx-auto flex h-[96px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:h-[112px] lg:px-10">
+      <div className="relative mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:h-[88px] sm:px-8 lg:h-[112px] lg:px-10">
         <Link to="/" className="group absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center" onClick={() => setOpen(false)}>
-          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fb05dbaf1bd604eb3bad4e9a855e3dbab?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-24 w-32 object-contain transition-transform group-hover:scale-105 lg:h-28 lg:w-36" />
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F4215d9916ba54932a9c5dfbeef662b8a%2Fb05dbaf1bd604eb3bad4e9a855e3dbab?format=webp&width=800&height=1200" alt="Elysara Organics and Lifestyle" className="h-20 w-24 object-contain transition-transform group-hover:scale-105 sm:h-24 sm:w-32 lg:h-28 lg:w-36" />
         </Link>
         <nav className="hidden items-center gap-9 lg:flex">
           <NavLink to="/" className={({ isActive }) => `text-[0.72rem] font-semibold uppercase tracking-[0.14em] transition-colors ${isActive ? "text-primary" : "text-foreground/65 hover:text-primary"}`}>Home</NavLink>

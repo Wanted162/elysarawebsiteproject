@@ -5,7 +5,7 @@ const productImages = {
 
 export function ProductArt({ tone = "blue", compact = false }: { tone?: "blue" | "coral"; compact?: boolean }) {
   const blue = tone === "blue";
-  return <div className={`glass-surface group relative flex items-center justify-center overflow-hidden rounded-[1.5rem] ${compact ? "h-44" : "h-64"} ${blue ? "bg-[#dce7e2]" : "bg-[#ead8cd]"}`}>
+  return <div className={`glass-surface group relative flex items-center justify-center overflow-hidden rounded-[1.5rem] ${compact ? "h-36 sm:h-44" : "h-52 sm:h-64"} ${blue ? "bg-[#dce7e2]" : "bg-[#ead8cd]"}`}>
     <img src={productImages[tone]} alt="" aria-hidden="true" className={`absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105 ${blue ? "opacity-75 saturate-[.9]" : "opacity-70 saturate-[.9] group-hover:opacity-80"}`} />
     <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/5" />
     <div className={`absolute -right-10 -top-10 h-44 w-44 rounded-full border ${blue ? "border-secondary/20" : "border-primary/20"}`} />
