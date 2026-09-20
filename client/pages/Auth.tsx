@@ -1,25 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Leaf, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { getAccounts, hashPassword, saveAccounts, setCurrentAccount, type StoredAccount } from "@/lib/auth";
 
 type AuthProps = { mode: "login" | "signup" };
-type Account = { email: string; password: string; name: string };
-
-const ACCOUNTS_KEY = "elysara-accounts";
-const CURRENT_USER_KEY = "elysara-current-user";
-
-function getAccounts(): Account[] {
-  try {
-    const value = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) ?? "[]");
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAccounts(accounts: Account[]) {
-  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-}
 
 export default function Auth({ mode }: AuthProps) {
   const signup = mode === "signup";
@@ -32,12 +16,12 @@ export default function Auth({ mode }: AuthProps) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const currentEmail = localStorage.getItem(CURRENT_USER_KEY);
+    const currentEmail = localStorage.getItem("elysara-current-user");
     const account = getAccounts().find((item) => item.email === currentEmail);
     if (account) setWelcomeName(account.name);
   }, []);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
@@ -49,26 +33,31 @@ export default function Auth({ mode }: AuthProps) {
     setBusy(true);
     const accounts = getAccounts();
     const existing = accounts.find((item) => item.email === trimmedEmail);
+    const passwordHash = await hashPassword(password);
+
     if (signup) {
       if (existing) {
         setError("An account already exists with this email. Please log in instead.");
         setBusy(false);
         return;
       }
-      const account = { email: trimmedEmail, password, name: trimmedName };
+      const account: StoredAccount = { email: trimmedEmail, passwordHash, name: trimmedName };
       saveAccounts([...accounts, account]);
-      localStorage.setItem(CURRENT_USER_KEY, account.email);
+      setCurrentAccount(account.email);
       setWelcomeName(account.name);
     } else {
-      if (!existing || existing.password !== password) {
+      const validPassword = existing?.passwordHash === passwordHash || (!existing?.passwordHash && existing?.password === password);
+      if (!existing || !validPassword) {
         setError("That email or password is incorrect.");
         setBusy(false);
         return;
       }
-      localStorage.setItem(CURRENT_USER_KEY, existing.email);
+      if (!existing.passwordHash) {
+        saveAccounts(accounts.map((account) => account.email === existing.email ? { email: account.email, name: account.name, passwordHash } : account));
+      }
+      setCurrentAccount(existing.email);
       setWelcomeName(existing.name);
     }
-    localStorage.setItem("elysara-member", "true");
     setBusy(false);
   };
 
