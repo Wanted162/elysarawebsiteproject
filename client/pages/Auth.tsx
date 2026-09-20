@@ -65,7 +65,7 @@ export default function Auth({ mode }: AuthProps) {
     <section className="photo-paper-warm flex min-h-[72vh] items-center justify-center px-6 py-24">
       <div className="w-full max-w-md">
         <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-foreground/55 hover:text-primary"><ArrowLeft size={15} /> Back home</Link>
-        <div className="mt-10 rounded-[1.5rem] border border-border bg-background/85 p-8 shadow-sm backdrop-blur-sm sm:p-10">
+        <div className="mt-10 glass-surface rounded-[1.5rem] p-8 shadow-sm backdrop-blur-sm sm:p-10">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-background"><Leaf size={18} /></span>
           <p className="eyebrow mt-8 text-primary">Elysara circle</p>
           <h1 className="mt-3 text-4xl">{signup ? "Create your account." : "Welcome back."}</h1>
