@@ -1,7 +1,7 @@
 const categoryImages = {
-  floral: "https://images.pexels.com/photos/16986600/pexels-photo-16986600.jpeg",
-  herbal: "https://images.pexels.com/photos/5605/drink-leaf-leaves-green.jpg",
-  superfood: "https://images.pexels.com/photos/15661863/pexels-photo-15661863.jpeg",
+  floral: "https://images.pexels.com/photos/6430865/pexels-photo-6430865.jpeg",
+  herbal: "https://images.pexels.com/photos/6574601/pexels-photo-6574601.jpeg",
+  superfood: "https://images.pexels.com/photos/6732733/pexels-photo-6732733.jpeg",
 };
 
 export function CategoryArt({ kind }: { kind: "floral" | "herbal" | "superfood" }) {
